@@ -35,6 +35,13 @@ store.dispatch(
 );
 
 store.dispatch(
+  filterTrans({
+    start: null,
+    end: null
+  })
+);
+
+store.dispatch(
   withdraw({
     accountId: 1,
     amount: 500
@@ -65,8 +72,8 @@ store.dispatch(
 
 store.dispatch(
   filterTrans({
-    start: 1,
-    end: 2
+    start: Date.now() - 4,
+    end: null
   })
 );
 

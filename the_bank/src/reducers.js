@@ -49,7 +49,7 @@ export function bankTransactions(state = newState, action) {
           }
         ],
         selectedUser: updateSelectedUser(state.selectedUser, action),
-        filteredTransactions: state.filteredTransactions
+        filteredTransactions: updateFilteredTrans(state.filteredTransactions, action)
       };
     case WITHDRAW:
       return {
@@ -74,7 +74,7 @@ export function bankTransactions(state = newState, action) {
           }
         ],
         selectedUser: updateSelectedUser(state.selectedUser, action),
-        filteredTransactions: state.filteredTransactions
+        filteredTransactions: updateFilteredTrans(state.filteredTransactions, action)
       };
     case TRANSFER:
       return {
@@ -105,7 +105,7 @@ export function bankTransactions(state = newState, action) {
           }
         ],
         selectedUser: updateSelectedUser(state.selectedUser, action),
-        filteredTransactions: state.filteredTransactions
+        filteredTransactions: updateFilteredTrans(state.filteredTransactions, action)
       };
     case SELECT:
       return {
@@ -122,12 +122,16 @@ export function bankTransactions(state = newState, action) {
         accounts: state.accounts,
         transactions: state.transactions,
         selectedUser: state.selectedUser,
-        filteredTransactions: state.transactions.filter(transaction => {
+        filteredTransactions: {
+          start: action.data.start,
+          end: action.data.end,
+          transactions: state.transactions.filter(transaction => {
           return (
             (!action.data.start || transaction.date > action.data.start) &&
             (!action.data.end || transaction.date < action.data.end)
           );
-        })
+          })
+        }
       };
 
     default:
@@ -170,5 +174,61 @@ function updateSelectedUser(selectedUser, action) {
           ...selectedUser
         };
       }
+  }
+}
+
+function updateFilteredTrans(filteredTransactions, action) {
+  if (!filteredTransactions.transactions || filteredTransactions.end) {
+    return filteredTransactions;
+  }
+  switch (action.type) {
+    case DEPOSIT:
+      return {
+        start: filteredTransactions.start,
+        end: filteredTransactions.end,
+        transactions: [
+          ...filteredTransactions.transactions,
+          {
+            id: action.data.transactionId,
+            date: Date.now(),
+            amount: action.data.amount,
+            type: "deposit",
+            from: null,
+            to: action.data.accountId
+          }
+        ]
+      };
+    case WITHDRAW:
+      return {
+        start: filteredTransactions.start,
+        end: filteredTransactions.end,
+        transactions: [
+          ...filteredTransactions.transactions,
+          {
+            id: action.data.transactionId,
+            date: Date.now(),
+            amount: action.data.amount,
+            type: "withdraw",
+            from: action.data.accountId,
+            to: null
+          }
+        ]
+      };
+    case TRANSFER:
+      return {
+        start: filteredTransactions.start,
+        end: filteredTransactions.end,
+        transactions: [
+          ...filteredTransactions.transactions,
+          {
+            id: action.data.transactionId,
+            date: Date.now(),
+            amount: action.data.amount,
+            type: "transfer",
+            from: action.data.from,
+            to: action.data.to
+          }
+        ]
+      };
   }
 }
